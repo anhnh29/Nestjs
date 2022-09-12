@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Employee } from './employee.entity';
+import { CreateEmployee } from './model/createEmployee';
 import { EmployeeDetail } from './model/employee.interface';
 
 @Injectable()
@@ -12,13 +13,15 @@ export class EmployeeService {
   ) {}
 
   findAll(name, gender, sort): Promise<EmployeeDetail[]> {
+    const search = {};
+    if (name) {
+      search['fullName'] = Like(`%${name}%`);
+    }
+    if (gender) {
+      search['gender'] = gender;
+    }
     return this.employeeRepository.find({
-      where: [
-        {
-          fullName: Like(`%${name}%`),
-          gender: Like(`%${gender}%`),
-        },
-      ],
+      where: search,
       order: { fullName: sort || 'ASC' },
     });
   }
@@ -31,7 +34,7 @@ export class EmployeeService {
     });
   }
 
-  create(body: EmployeeDetail): Promise<EmployeeDetail> {
+  create(body: CreateEmployee): Promise<CreateEmployee> {
     return this.employeeRepository.save(body);
   }
 
